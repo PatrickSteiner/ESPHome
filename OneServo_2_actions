@@ -1,0 +1,99 @@
+substitutions:
+  name: ironmanflap1
+  friendly_name: Ironman Backflap 1
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  min_version: 2024.6.0
+  name_add_mac_suffix: false
+  project:
+    name: esphome.web
+    version: dev
+
+esp8266:
+  board: d1_mini
+  
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  ssid: steiner
+  password: pat4president123
+  fast_connect: on
+  # Set up a wifi access point
+  ap: {}
+
+output:
+  - platform: esp8266_pwm
+    id: pwm_output
+    pin: D1
+    frequency: 50 Hz
+    
+servo:
+  - id: my_servo
+    output: pwm_output
+
+number:
+  - platform: template
+    name: Backflap Servo Control
+    min_value: -100
+    max_value: 100
+    step: 1
+    set_action:
+      then:
+        - servo.write:
+            id: my_servo
+            level: !lambda 'return x / 100.0;'
+
+button:
+  - platform: template
+    name: Open Backflap Right
+    id: open_backflap_right
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: open_backflap_right_script
+  - platform: template
+    name: Close Backflap Right
+    id: close_backflap_right
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: close_backflap_right_script
+
+
+script:
+  - id: open_backflap_right_script
+    then:
+      - servo.write:
+          id: my_servo
+          level: 100.0%
+  - id: close_backflap_right_script
+    then:
+      - servo.write:
+          id: my_servo
+          level: 0.0%
+  
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://esphome/example-configs/esphome-web/esp8266.yaml@main
+  import_full_config: true
+
+# To have a "next url" for improv serial
+web_server:
