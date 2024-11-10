@@ -44,6 +44,8 @@ output:
 servo:
   - id: my_servo
     output: pwm_output
+    auto_detach_time: 5s # shutdown power to servo after 5s
+    transition_length:  0s # speed of servo, with 0s being the
 
 number:
   - platform: template
