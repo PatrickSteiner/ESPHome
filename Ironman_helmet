@@ -20,6 +20,8 @@ logger:
 
 # Enable Home Assistant API
 api:
+  encryption:
+    key: "bCzTAoXq6dgS7OwUNl5AX+Z1IlRqxNBBTlpzwwg9orc="
 
 # Allow Over-The-Air updates
 ota:
