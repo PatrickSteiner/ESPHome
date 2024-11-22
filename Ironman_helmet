@@ -1,0 +1,115 @@
+substitutions:
+  name: ironmanhelmet
+  friendly_name: Ironman Helmet
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  min_version: 2024.6.0
+  name_add_mac_suffix: false
+  project:
+    name: esphome.web
+    version: dev
+
+esp8266:
+  board: d1_mini
+  
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  ssid: steiner
+  password: pat4president123
+  fast_connect: on
+  # Set up a wifi access point
+  ap: {}
+
+output:
+  - platform: esp8266_pwm
+    id: pwm_output_right
+    pin: D1
+    frequency: 50 Hz
+  - platform: esp8266_pwm
+    id: pwm_output_left
+    pin: D3
+    frequency: 50 Hz
+  - id: light_output
+    platform: gpio
+    pin: D5
+    
+light:
+  - platform: binary
+    name: "Eyes"
+    output: light_output
+
+servo:
+  - id: servo_right
+    output: pwm_output_right
+    auto_detach_time: 5s # shutdown power to servo after 5s
+    transition_length:  0s # speed of servo, with 0s being the
+
+  - id: servo_left
+    output: pwm_output_left
+    auto_detach_time: 5s # shutdown power to servo after 5s
+    transition_length:  0s # speed of servo, with 0s being the
+
+
+button:
+  - platform: template
+    name: Open Helmet
+    id: open_helmet
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: open_helmet_script
+  - platform: template
+    name: Close Helmet
+    id: close_helmet
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: close_helmet_script
+
+
+script:
+  - id: open_helmet_script
+    then:
+      - servo.write:
+          id: servo_right
+          level: -100.0%
+      - servo.write: 
+          id: servo_left
+          level: 100.0%
+      - output.turn_off: light_output
+  - id: close_helmet_script
+    then:
+      - servo.write:
+          id: servo_right
+          level: 15.0%
+      - servo.write: 
+          id: servo_left
+          level: -15.0%
+      - output.turn_on: light_output
+  
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://esphome/example-configs/esphome-web/esp8266.yaml@main
+  import_full_config: true
+
+# To have a "next url" for improv serial
+web_server:
