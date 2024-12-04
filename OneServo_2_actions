@@ -29,8 +29,8 @@ ota:
 improv_serial:
 
 wifi:
-  ssid: steiner
-  password: pat4president123
+  ssid: !secret wifi_ssid
+  password: !secret wifi_ssid
   fast_connect: on
   # Set up a wifi access point
   ap: {}
