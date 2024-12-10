@@ -31,7 +31,7 @@ output:
     frequency: 50 Hz
   - platform: esp8266_pwm
     id: pwm_output_left
-    pin: D3
+    pin: D2
     frequency: 50 Hz
 
 servo:
