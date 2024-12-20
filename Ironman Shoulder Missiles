@@ -1,0 +1,251 @@
+esphome:
+  name: ironman-shoulders
+  friendly_name: Ironman_Shoulders
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "Ba7JS8/tncFwmoC/h6HSt3CPf+6HqAbzDeQgTkaC6l0="
+
+ota:
+  - platform: esphome
+    password: "9abe1060502f3d3e5e5a0b72d1e7bdf9"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Ironman-Shoulders"
+    password: "S0estHnF9Ak3"
+
+captive_portal:
+    
+web_server:
+  version: 3
+  sorting_groups:
+    - id: sorting_group_right_missiles
+      name: "Right Missiles"
+      sorting_weight: 10
+    - id: sorting_group_left_missiles
+      name: "Left Missiles"
+      sorting_weight: 20
+    - id: sorting_group_both_missiles
+      name: "Both Missiles"
+      sorting_weight: 30
+
+output:
+  - platform: esp8266_pwm
+    id: pwm_output_clavicle_right
+    pin: D1
+    frequency: 50 Hz
+  - platform: esp8266_pwm
+    id: pwm_output_missiles_right
+    pin: D2
+    frequency: 50 Hz
+  - platform: esp8266_pwm
+    id: pwm_output_clavicle_left
+    pin: D3
+    frequency: 50 Hz
+  - platform: esp8266_pwm
+    id: pwm_output_missiles_left
+    pin: D4
+    frequency: 50 Hz
+  
+servo:
+  - id: clavicle_right
+    output: pwm_output_clavicle_right
+    auto_detach_time: 1s # shutdown power to servo after 5s
+    transition_length:  0s # speed of servo, with 0s being the fastes
+  - id: missiles_right
+    output: pwm_output_missiles_right
+    auto_detach_time: 1s # shutdown power to servo after 5s
+    transition_length:  3s # speed of servo, with 0s being the fastes
+  - id: clavicle_left
+    output: pwm_output_clavicle_left
+    auto_detach_time: 1s # shutdown power to servo after 5s
+    transition_length:  0s # speed of servo, with 0s being the fastes
+  - id: missiles_left
+    output: pwm_output_missiles_left
+    auto_detach_time: 1s # shutdown power to servo after 5s
+    transition_length:  3s # speed of servo, with 0s being the fastes
+
+script:
+  - id: open_right_clavicle_script
+    then:
+      - servo.write:
+          id: clavicle_right
+          level: -100.0%
+  - id: open_right_missiles_script 
+    then:   
+      - servo.write:
+          id: missiles_right
+          level: -60%
+  - id: close_right_clavicle_script
+    then:
+      - servo.write:
+          id: clavicle_right
+          level: 100%
+  - id: close_right_missiles_script
+    then:
+      - servo.write:
+          id: missiles_right
+          level: 100%
+  - id: open_and_close_right_missiles_script
+    then:
+      - script.execute: open_right_clavicle_script
+      - delay: 2s
+      - script.execute: open_right_missiles_script
+      - delay: 2s
+      - script.execute: close_right_missiles_script
+      - delay: 2s
+      - script.execute: close_right_clavicle_script
+  - id: open_left_clavicle_script
+    then:
+      - servo.write:
+          id: clavicle_left
+          level: 100.0%
+  - id: open_left_missiles_script 
+    then:   
+      - servo.write:
+          id: missiles_left
+          level: 20%
+  - id: close_left_clavicle_script
+    then:
+      - servo.write:
+          id: clavicle_left
+          level: -100%
+  - id: close_left_missiles_script
+    then:
+      - servo.write:
+          id: missiles_left
+          level: -100%
+  - id: open_and_close_left_missiles_script
+    then:
+      - script.execute: open_left_clavicle_script
+      - delay: 2s
+      - script.execute: open_left_missiles_script
+      - delay: 2s
+      - script.execute: close_left_missiles_script
+      - delay: 2s
+      - script.execute: close_left_clavicle_script
+
+button:
+  - platform: template
+    name: Open right clavicle
+    web_server:
+      sorting_weight: 10
+      sorting_group_id: sorting_group_right_missiles
+    id: open_right_clavicle
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: open_right_clavicle_script
+  - platform: template
+    name: Activate right missiles
+    web_server:
+      sorting_weight: 20
+      sorting_group_id: sorting_group_right_missiles
+    id: activate_right_missiles
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: open_right_missiles_script
+  - platform: template
+    name: Deactivate right missiles
+    web_server:
+      sorting_weight: 30
+      sorting_group_id: sorting_group_right_missiles
+    id: deactivate_right_missiles
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: close_right_missiles_script
+  - platform: template
+    name: Close right clavicle
+    web_server:
+      sorting_weight: 40
+      sorting_group_id: sorting_group_right_missiles
+    id: close_right_missiles
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: close_right_clavicle_script
+  - platform: template
+    name: Fire Right Missiles
+    web_server:
+      sorting_weight: 50
+      sorting_group_id: sorting_group_right_missiles
+    id: fire_right_missiles
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: open_and_close_right_missiles_script
+  - platform: template
+    name: Open left clavicle
+    web_server:
+      sorting_weight: 10
+      sorting_group_id: sorting_group_left_missiles
+    id: open_left_clavicle
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: open_left_clavicle_script
+  - platform: template
+    name: Activate left missiles
+    web_server:
+      sorting_weight: 20
+      sorting_group_id: sorting_group_left_missiles
+    id: activate_left_missiles
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: open_left_missiles_script
+  - platform: template
+    name: Deactivate left missiles
+    web_server:
+      sorting_weight: 30
+      sorting_group_id: sorting_group_left_missiles
+    id: deactivate_left_missiles
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: close_left_missiles_script
+  - platform: template
+    name: Close left clavicle
+    web_server:
+      sorting_weight: 40
+      sorting_group_id: sorting_group_left_missiles
+    id: close_left_clavicle
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: close_left_clavicle_script
+  - platform: template
+    name: Fire Left Missiles
+    web_server:
+      sorting_weight: 50
+      sorting_group_id: sorting_group_left_missiles
+    id: fire_left_missiles
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: open_and_close_left_missiles_script
+  - platform: template
+    name: Fire All Missiles
+    web_server:
+      sorting_weight: 10
+      sorting_group_id: sorting_group_both_missiles
+    id: fire_both_missiles
+    icon: "mdi:liquid-spot"
+    on_press:
+      then:
+        - script.execute: open_and_close_left_missiles_script
+        - script.execute: open_and_close_right_missiles_script
