@@ -7,12 +7,8 @@ esp8266:
 
 # Enable logging
 logger:
-
-# Enable Home Assistant API
-api:
-  encryption:
-    key: "KZTGPRBEn16BUAkU1IJhIS/pe4U1oJ3pf59vMARtxhg="
-
+  level: INFO
+  
 ota:
   - platform: esphome
     password: "611404b86761874559232e492b060be5"
@@ -29,15 +25,31 @@ wifi:
 captive_portal:
 
 web_server:
+  version: 3
+  sorting_groups:
+    - id: full_action
+      name: "Full Action"
+      sorting_weight: 10
 
 http_request:
   verify_ssl: false
   useragent: esphome/device
   timeout: 10s
 
+script:
+  - id: helmet_and_missiles_script
+    then:
+      - http_request.post: http://ironman-helmet.local/button/close_helmet/press
+      - delay: 2s
+      - http_request.post: http://ironman-shoulders.local/button/fire_all_missiles/press
+
+
 button:
   - platform: template
-    name: missiles
-    id: missiles
+    name: Helmet and Missiles 
+    web_server:
+      sorting_weight: 10
+      sorting_group_id: full_action
+    id: helmet_and_missiles
     on_press:
-      - http_request.post: http://ironman-shoulders.local/button/fire_all_missiles/press
+      - script.execute: helmet_and_missiles_script
